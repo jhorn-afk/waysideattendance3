@@ -151,8 +151,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 </div>
 <!-- Staff -->
 <div class="page" id="sPage">
-  <div class="fc"><div style="display:flex;gap:8px;align-items:end"><div style="flex:1"><label>Staff Full Name</label><input type="text" id="sNameIn" placeholder="e.g. Sarah Lowery"></div><div style="flex:.7"><label>Home</label><input type="text" id="sHomeIn" placeholder="Home" list="hl"></div><button class="btn bg bs" onclick="addStaff()">+ Sign In</button></div><datalist id="hl"></datalist></div>
-  <div style="text-align:center;font-size:.74rem;color:var(--mut);margin-bottom:7px" id="sCtr"></div><div id="sList"></div>
+  <div class="fc"><label>Date</label><div style="font-weight:600;font-size:.92rem" id="sDateShow"></div></div>
+  <div class="wt" style="margin-bottom:4px">Staff Sign-In</div>
+  <div class="wst">Tap a staff member to sign in, or add someone new</div>
+  <div style="display:flex;gap:8px;margin-bottom:14px"><input type="text" class="si" id="newStaffIn" placeholder="Add new staff name..."><button class="btn bg bs" onclick="addNewStaff()">Add</button></div>
+  <div id="staffRoster"></div>
+  <div style="text-align:center;font-size:.74rem;color:var(--mut);margin:10px 0 4px" id="sCtr"></div>
+  <div id="sList"></div>
+  <datalist id="hl"></datalist>
 </div>
 <!-- Admin -->
 <div class="page" id="aPage">
@@ -160,6 +166,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
   <div class="adash" id="aDash">
     <div class="asec" id="secActions"><h3>Quick Actions</h3><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn bp bs" onclick="saveDay()">💾 Save Log</button><button class="btn bg bs" onclick="reportToday()">📄 Report</button><button class="btn bb bs" onclick="showSum()">📊 Summary</button><button class="btn bb bs" onclick="exportAllCSV()">Export CSV</button><button class="btn bd bs" onclick="clearToday()">Clear Today</button></div></div>
     <div class="asec" id="secManage"><h3>Manage Individuals — <span id="manLoc"></span></h3><div class="add-form"><input type="text" id="addName" placeholder="Full Name"><input type="text" id="addHome" placeholder="Home Name"><select id="addAAI"><option value="A">A</option><option value="B">B</option><option value="C" selected>C</option><option value="1:1">1:1</option></select><button class="btn bp bs" onclick="addInd()">Add</button></div><div style="margin-bottom:8px"><label style="font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.7px;color:var(--mut);display:block;margin-bottom:4px">Homes</label><div id="homeChips"></div></div><div class="manage-list" id="manList"></div><div style="margin-top:6px;font-size:.72rem;color:var(--mut)" id="manCt"></div></div>
+    <div class="asec" id="secStaffMgr"><h3>Manage Staff Roster — <span id="staffManLoc"></span></h3><p style="font-size:.74rem;color:var(--mut);margin-bottom:8px">Staff added here appear as tap-to-select on the Staff tab</p><div style="display:flex;gap:6px;margin-bottom:10px"><input type="text" id="addStaffName" placeholder="Staff Full Name" style="flex:1;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><input type="text" id="addStaffHome" placeholder="Home (optional)" style="flex:.7;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem" list="hl2"><button class="btn bg bs" onclick="addStaffRoster()">Add</button></div><datalist id="hl2"></datalist><div id="staffManList"></div><div style="margin-top:6px;font-size:.72rem;color:var(--mut)" id="staffManCt"></div></div>
     <div class="asec" id="secLogs"><h3>Saved Logs — <span id="logLoc"></span></h3><div class="loglist" id="logList"><p style="color:var(--mut);font-size:.8rem;padding:8px">No saved logs yet.</p></div></div>
     <div class="asec" id="secViewers"><h3>Report Viewers</h3><p style="font-size:.74rem;color:var(--mut);margin-bottom:8px">Add people who can view and print reports (read-only access)</p><div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap"><input type="text" id="vuName" placeholder="Name" style="flex:1;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><input type="password" id="vuPin" placeholder="4-digit PIN" maxlength="4" inputmode="numeric" style="width:100px;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><select id="vuLoc" style="padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><option value="all">All Locations</option></select><button class="btn bp bs" onclick="addViewer()">Add</button></div><div id="vuList"></div></div>
     <div class="asec" id="secSettings"><h3>Settings</h3><div class="fr fr2"><div><label>Admin Email</label><input type="email" id="admEmail" placeholder="your@email.com"></div><div><label>Change Admin PIN</label><div style="display:flex;gap:6px"><input type="password" id="newPin" placeholder="4-digit" maxlength="4" inputmode="numeric" style="flex:1;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif"><button class="mb mb-v" onclick="setPin()">Set</button></div></div></div></div>
@@ -178,7 +185,7 @@ let loc='westlake',ind={},pt={},sr={},sic={},drv={};
 let step=1,selH=new Set(),selP=new Set(),selD=null,act='in';
 let vKey=null,admOK=false,rptOK=false;
 
-function odb(){return new Promise((res,rej)=>{const r=indexedDB.open('PathwaysAppV3',1);r.onupgradeneeded=e=>{const db=e.target.result;['individuals','state','logs','settings','drivers','viewers'].forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s)})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function odb(){return new Promise((res,rej)=>{const r=indexedDB.open('PathwaysAppV3',2);r.onupgradeneeded=e=>{const db=e.target.result;['individuals','state','logs','settings','drivers','viewers','staffroster'].forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s)})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function D(s,k,v){const db=await odb();const tx=db.transaction(s,'readwrite');tx.objectStore(s).put(JSON.parse(JSON.stringify(v)),k);await new Promise(r=>{tx.oncomplete=r})}
 async function G(s,k){try{const db=await odb();const tx=db.transaction(s,'readonly');const rq=tx.objectStore(s).get(k);return new Promise(r=>{rq.onsuccess=()=>r(rq.result)})}catch(e){return undefined}}
 async function A(s){const db=await odb();const tx=db.transaction(s,'readonly');const st=tx.objectStore(s);const ks=await new Promise(r=>{const q=st.getAllKeys();q.onsuccess=()=>r(q.result)});const vs=await new Promise(r=>{const q=st.getAll();q.onsuccess=()=>r(q.result)});return ks.map((k,i)=>({key:k,value:vs[i]}))}
@@ -198,7 +205,7 @@ function now(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':
 function today(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
 function getSelHomes(){return[...selH]}
 
-function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';if(admOK){$('manLoc').textContent=lS();$('logLoc').textContent=lS();renderManage();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderStaff();bHomeList()};el.appendChild(b)})}
+function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';if(admOK){$('manLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();renderManage();renderStaffManage();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderStaff();bHomeList()};el.appendChild(b)})}
 
 let svT=null;
 function schSave(){clearTimeout(svT);svT=setTimeout(async()=>{const state={_driver:$('driverName').value,_date:$('logDate').value};LOCS.forEach(l=>{state[l.id]={pt:pt[l.id]||{},sr:sr[l.id]||[],sic:sic[l.id]||1}});await D('state','current',state);$('autoSave').textContent='Saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},500)}
@@ -232,19 +239,80 @@ function rmDrv(nm){if(!confirm('Remove "'+nm+'"?'))return;const dh=drv[loc]||{};
 
 function rCS(){const el=$('cSum');const pp=cP();let h='<div class="cs-l">'+(act==='in'?'☀️ Arriving':'🌙 Departing')+' · Driver: '+(selD||'—')+'</div>';selP.forEach(i=>{const p=pp[i];if(p)h+='<div class="cs-i"><span>'+p.name+'</span><span>'+p.home+'</span></div>'});el.innerHTML=h}
 
-function doConfirm(){const time=$('wTime').value;if(!time){toast('Set a time');return}const pp=cP(),t=pt[loc];let c=0;const drName=selD||'';selP.forEach(i=>{if(!t[i])t[i]={timeIn:'',timeOut:'',signedIn:false,fullyLocked:false,driverIn:'',driverOut:''};if(act==='in'){if(!t[i].signedIn){t[i].timeIn=time;t[i].signedIn=true;t[i].driverIn=drName;c++}}else{if(t[i].signedIn&&!t[i].fullyLocked){t[i].timeOut=time;t[i].fullyLocked=true;t[i].driverOut=drName;c++}else if(!t[i].signedIn){t[i].timeIn=time;t[i].timeOut=time;t[i].signedIn=true;t[i].fullyLocked=true;t[i].driverIn=drName;t[i].driverOut=drName;c++}}});if(drName){if(!drv[loc])drv[loc]={};[...selH].forEach(h=>{if(!drv[loc][h])drv[loc][h]=[];let d=drv[loc][h].find(d=>d.name.toLowerCase()===drName.toLowerCase());if(!d)drv[loc][h].push({name:drName,uses:1});else d.uses=(d.uses||0)+1});saveDrv()}$('driverName').value=drName;schSave();toast('✓ '+c+' '+(act==='in'?'signed in':'signed out'));updateDash();const allDone=pp.every((_,i)=>!t[i]||!t[i].signedIn||t[i].fullyLocked);const anyDone=pp.some((_,i)=>t[i]&&t[i].fullyLocked);if(allDone&&anyDone&&act==='out'){saveDayQuiet();toast('Day complete — report saved to Admin')}resetWiz()}
+function doConfirm(){const time=$('wTime').value;if(!time){toast('Set a time');return}const pp=cP(),t=pt[loc];let c=0;const drName=selD||'';selP.forEach(i=>{if(!t[i])t[i]={timeIn:'',timeOut:'',signedIn:false,fullyLocked:false,driverIn:'',driverOut:''};if(act==='in'){if(!t[i].signedIn){t[i].timeIn=time;t[i].signedIn=true;t[i].driverIn=drName;c++}}else{if(t[i].signedIn&&!t[i].fullyLocked){t[i].timeOut=time;t[i].fullyLocked=true;t[i].driverOut=drName;c++}else if(!t[i].signedIn){t[i].timeIn=time;t[i].timeOut=time;t[i].signedIn=true;t[i].fullyLocked=true;t[i].driverIn=drName;t[i].driverOut=drName;c++}}});if(drName){if(!drv[loc])drv[loc]={};[...selH].forEach(h=>{if(!drv[loc][h])drv[loc][h]=[];let d=drv[loc][h].find(d=>d.name.toLowerCase()===drName.toLowerCase());if(!d)drv[loc][h].push({name:drName,uses:1});else d.uses=(d.uses||0)+1});saveDrv()}$('driverName').value=drName;schSave();toast('✓ '+c+' '+(act==='in'?'signed in':'signed out'));updateDash();checkAllDone();resetWiz()}
 
-function bHomeList(){const dl=$('hl');dl.innerHTML='';['Pathways Westlake','Float'].forEach(x=>{const o=document.createElement('option');o.value=x;dl.appendChild(o)});cH().forEach(h=>{const o=document.createElement('option');o.value=h;dl.appendChild(o)})}
-function addStaff(){const nm=$('sNameIn').value.trim();const hm=$('sHomeIn').value.trim();if(!nm){toast('Enter staff name');return}if(!sr[loc])sr[loc]=[];if(!sic[loc])sic[loc]=1;sr[loc].push({id:sic[loc]++,name:nm,home:hm,timeIn:now(),timeOut:'',signedIn:true,fullyLocked:false});$('sNameIn').value='';$('sHomeIn').value='';schSave();renderStaff();toast(nm+' signed in')}
-function signOutStaff(idx){const r=sr[loc][idx];r.timeOut=now();r.fullyLocked=true;schSave();renderStaff();toast(r.name+' signed out')}
+function bHomeList(){const dl=$('hl');dl.innerHTML='';['Pathways Westlake','Float'].forEach(x=>{const o=document.createElement('option');o.value=x;dl.appendChild(o)});cH().forEach(h=>{const o=document.createElement('option');o.value=h;dl.appendChild(o)});const dl2=$('hl2');if(dl2){dl2.innerHTML=dl.innerHTML}}
+
+// Staff roster stored in IndexedDB per location
+let staffRoster={};
+async function loadStaffRoster(){for(const l of LOCS){const sv=await G('staffroster',l.id);staffRoster[l.id]=sv||[]}}
+async function saveStaffRoster(){await D('staffroster',loc,staffRoster[loc]||[])}
+
+// Admin: manage staff roster
+function renderStaffManage(){
+  const roster=staffRoster[loc]||[];const el=$('staffManList');el.innerHTML='';
+  $('staffManLoc').textContent=lS();
+  if(!roster.length){el.innerHTML='<p style="color:var(--mut);font-size:.78rem">No staff added for this location.</p>';$('staffManCt').textContent='';return}
+  roster.sort((a,b)=>a.name.localeCompare(b.name)).forEach((s,i)=>{
+    const row=document.createElement('div');row.className='m-row';
+    row.innerHTML='<span class="m-nm">'+s.name+'</span><span class="m-hm">'+(s.home||'—')+'</span><button class="mb mb-d" onclick="rmStaffRoster('+i+')">Remove</button>';
+    el.appendChild(row)});
+  $('staffManCt').textContent=roster.length+' staff members'}
+async function addStaffRoster(){const nm=$('addStaffName').value.trim();const hm=$('addStaffHome').value.trim();if(!nm){toast('Enter staff name');return}if(!staffRoster[loc])staffRoster[loc]=[];if(staffRoster[loc].find(s=>s.name.toLowerCase()===nm.toLowerCase())){toast('Already exists');return}staffRoster[loc].push({name:nm,home:hm,uses:0});await saveStaffRoster();$('addStaffName').value='';$('addStaffHome').value='';renderStaffManage();toast('Added '+nm)}
+async function rmStaffRoster(idx){const s=staffRoster[loc][idx];if(!confirm('Remove '+s.name+'?'))return;staffRoster[loc].splice(idx,1);await saveStaffRoster();renderStaffManage();toast('Removed '+s.name)}
+
+// Staff tab: tap to sign in from roster
+function signInFromRoster(name,home){
+  if(!sr[loc])sr[loc]=[];if(!sic[loc])sic[loc]=1;
+  sr[loc].push({id:sic[loc]++,name:name,home:home||'',timeIn:now(),timeOut:'',signedIn:true,fullyLocked:false});
+  // increment uses
+  const r=(staffRoster[loc]||[]).find(s=>s.name===name);if(r)r.uses=(r.uses||0)+1;saveStaffRoster();
+  schSave();renderStaff();toast(name+' signed in')}
+function addNewStaff(){const nm=$('newStaffIn').value.trim();if(!nm){toast('Enter staff name');return}
+  // Also add to roster if not there
+  if(!staffRoster[loc])staffRoster[loc]=[];
+  if(!staffRoster[loc].find(s=>s.name.toLowerCase()===nm.toLowerCase())){staffRoster[loc].push({name:nm,home:'',uses:0});saveStaffRoster()}
+  signInFromRoster(nm,'')}
+function signOutStaff(idx){const r=sr[loc][idx];r.timeOut=now();r.fullyLocked=true;schSave();renderStaff();toast(r.name+' signed out');checkAllDone()}
 function adminUnlockStaff(idx){sr[loc][idx].signedIn=false;sr[loc][idx].fullyLocked=false;sr[loc][idx].timeIn='';sr[loc][idx].timeOut='';schSave();renderStaff();toast('Entry unlocked')}
 function rmStaff(idx){if(sr[loc][idx].signedIn){toast('Cannot remove — use Admin unlock');return}sr[loc].splice(idx,1);schSave();renderStaff()}
 function updateStaffTime(idx,field,val){sr[loc][idx][field]=val;schSave()}
 
-function renderStaff(){const list=$('sList');const rows=sr[loc]||[];list.innerHTML='';const filled=rows.filter(r=>r.signedIn).length;const done=rows.filter(r=>r.fullyLocked).length;$('sCtr').innerHTML='<b>'+filled+'</b> signed in · <b>'+done+'</b> complete';rows.forEach((r,idx)=>{const card=document.createElement('div');card.className='sc-card'+(r.fullyLocked?' locked':r.signedIn?' signed':'');if(r.fullyLocked){const ub=admOK?'<button class="mb mb-d" onclick="adminUnlockStaff('+idx+')">Unlock</button>':'';card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · '+f12(r.timeIn)+' → '+f12(r.timeOut)+'</div></div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--grn);font-weight:700">✓ Locked</span>'+ub+'</div></div>'}else if(r.signedIn){card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><label style="font-size:.66rem;color:var(--mut)">In:</label><input type="time" class="ti-edit" value="'+r.timeIn+'" onchange="updateStaffTime('+idx+',\'timeIn\',this.value)"><label style="font-size:.66rem;color:var(--mut)">Out:</label><input type="time" class="ti-edit" value="'+(r.timeOut||'')+'" onchange="updateStaffTime('+idx+',\'timeOut\',this.value)"><button class="btn bc bs" style="padding:6px 12px;font-size:.74rem" onclick="signOutStaff('+idx+')">Sign Out</button></div></div>'}else{card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+'</div></div><button class="mb mb-d" onclick="rmStaff('+idx+')">✕ Remove</button></div>'}list.appendChild(card)})}
+function renderStaff(){
+  $('sDateShow').textContent=fD($('logDate').value);
+  // Render roster (tap to sign in)
+  const rosterEl=$('staffRoster');rosterEl.innerHTML='';
+  const roster=(staffRoster[loc]||[]).slice().sort((a,b)=>(b.uses||0)-(a.uses||0));
+  const signedNames=new Set((sr[loc]||[]).map(r=>r.name));
+  roster.forEach(s=>{
+    const alreadyIn=signedNames.has(s.name);
+    const c=document.createElement('div');c.className='dc'+(alreadyIn?' sel':'');c.style.opacity=alreadyIn?'.5':'1';
+    c.innerHTML='<span class="ck">'+(alreadyIn?'✓':'')+'</span><span class="dn">'+s.name+'</span><span class="df">'+(s.home||'—')+(s.uses?' · '+s.uses+' day'+(s.uses!==1?'s':''):'')+'</span>';
+    if(!alreadyIn)c.onclick=()=>signInFromRoster(s.name,s.home);
+    rosterEl.appendChild(c)});
+  if(!roster.length)rosterEl.innerHTML='<p style="color:var(--mut);text-align:center;padding:16px;font-size:.85rem">No staff roster yet — add someone above or go to Admin to manage staff</p>';
+
+  // Render signed-in staff cards
+  const list=$('sList');const rows=sr[loc]||[];list.innerHTML='';
+  const filled=rows.filter(r=>r.signedIn).length;const done=rows.filter(r=>r.fullyLocked).length;
+  $('sCtr').innerHTML=filled?'<b>'+filled+'</b> signed in · <b>'+done+'</b> complete':'';
+  rows.forEach((r,idx)=>{const card=document.createElement('div');card.className='sc-card'+(r.fullyLocked?' locked':r.signedIn?' signed':'');
+    if(r.fullyLocked){const ub=admOK?'<button class="mb mb-d" onclick="adminUnlockStaff('+idx+')">Unlock</button>':'';card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · '+f12(r.timeIn)+' → '+f12(r.timeOut)+'</div></div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--grn);font-weight:700">✓ Locked</span>'+ub+'</div></div>'}
+    else if(r.signedIn){card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><label style="font-size:.66rem;color:var(--mut)">In:</label><input type="time" class="ti-edit" value="'+r.timeIn+'" onchange="updateStaffTime('+idx+',\'timeIn\',this.value)"><label style="font-size:.66rem;color:var(--mut)">Out:</label><input type="time" class="ti-edit" value="'+(r.timeOut||'')+'" onchange="updateStaffTime('+idx+',\'timeOut\',this.value)"><button class="btn bc bs" style="padding:6px 12px;font-size:.74rem" onclick="signOutStaff('+idx+')">Sign Out</button></div></div>'}
+    list.appendChild(card)})}
+
+// Check if ALL consumers and ALL staff are done
+function checkAllDone(){
+  const pp=cP(),t=pt[loc]||{};
+  const pAllDone=pp.every((_,i)=>!t[i]||!t[i].signedIn||t[i].fullyLocked);
+  const pAnyDone=pp.some((_,i)=>t[i]&&t[i].fullyLocked);
+  const rows=sr[loc]||[];
+  const sAllDone=rows.length===0||rows.every(r=>r.fullyLocked);
+  const sAnyDone=rows.some(r=>r.fullyLocked);
+  if(pAllDone&&pAnyDone&&sAllDone&&(pAnyDone||sAnyDone)){saveDayQuiet();toast('Day complete — report saved to Admin')}}
 
 function openAdmin(){goPage('aPage')}
-async function unlock(){const pin=$('pinIn').value;const adminPin=await getPin();if(pin===adminPin){$('aLock').style.display='none';$('aDash').classList.add('unlocked');admOK=true;rptOK=true;$('manLoc').textContent=lS();$('logLoc').textContent=lS();renderManage();loadLogs();loadSettings();renderStaff();renderViewers();bViewerLocSel();return}const viewers=await A('viewers');const v=viewers.find(x=>x.value.pin===pin);if(v){const vd=v.value;if(vd.loc==='all'||vd.loc===loc){$('aLock').style.display='none';$('aDash').classList.add('unlocked');rptOK=true;admOK=false;$('logLoc').textContent=lS();loadLogs();['secActions','secManage','secViewers','secSettings'].forEach(id=>$(id).style.display='none');toast('Report viewer: '+vd.name)}else{toast('No access to this location')}}else{toast('Wrong PIN');$('pinIn').value=''}}
+async function unlock(){const pin=$('pinIn').value;const adminPin=await getPin();if(pin===adminPin){$('aLock').style.display='none';$('aDash').classList.add('unlocked');admOK=true;rptOK=true;$('manLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();renderManage();renderStaffManage();loadLogs();loadSettings();renderStaff();renderViewers();bViewerLocSel();return}const viewers=await A('viewers');const v=viewers.find(x=>x.value.pin===pin);if(v){const vd=v.value;if(vd.loc==='all'||vd.loc===loc){$('aLock').style.display='none';$('aDash').classList.add('unlocked');rptOK=true;admOK=false;$('logLoc').textContent=lS();loadLogs();['secActions','secManage','secStaffMgr','secViewers','secSettings'].forEach(id=>$(id).style.display='none');toast('Report viewer: '+vd.name)}else{toast('No access to this location')}}else{toast('Wrong PIN');$('pinIn').value=''}}
 async function setPin(){const n=$('newPin').value;if(n.length!==4||!/^\d+$/.test(n)){toast('PIN must be 4 digits');return}await savSet({pin:n});$('newPin').value='';toast('PIN updated!')}
 
 // Viewers
@@ -273,7 +341,17 @@ async function loadLog(k){if(!admOK){toast('Admin access required');return}const
 function buildReport(d){const pByHome={};(d.participants||[]).forEach(p=>{if(!pByHome[p.home])pByHome[p.home]=[];pByHome[p.home].push(p)});const pHomes=Object.keys(pByHome).sort();const sByHome={};(d.staff||[]).forEach(s=>{const h=s.home||'Unassigned';if(!sByHome[h])sByHome[h]=[];sByHome[h].push(s)});const sHomes=Object.keys(sByHome).sort();let pT='';pHomes.forEach(home=>{pT+='<div class="home-hdr">'+home+'</div><table class="rt"><thead><tr><th style="width:22%">Name</th><th>Home</th><th>AAI</th><th>In</th><th>Out</th><th>Arr. Driver</th><th>Dep. Driver</th></tr></thead><tbody>';pByHome[home].forEach(p=>{pT+='<tr><td>'+p.name+'</td><td>'+p.home+'</td><td>'+(p.aai||'—')+'</td><td>'+f12(p.timeIn)+'</td><td>'+f12(p.timeOut)+'</td><td>'+(p.driverIn||p.driver||'—')+'</td><td>'+(p.driverOut||'—')+'</td></tr>'});pT+='</tbody></table>'});let sT='';sHomes.forEach(home=>{sT+='<div class="home-hdr">'+home+'</div><table class="rt staff"><thead><tr><th style="width:35%">Name</th><th>House</th><th>In</th><th>Out</th></tr></thead><tbody>';sByHome[home].forEach(s=>{sT+='<tr><td>'+s.name+'</td><td>'+(s.home||'—')+'</td><td>'+f12(s.timeIn)+'</td><td>'+f12(s.timeOut)+'</td></tr>'});sT+='</tbody></table>'});return'<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+d.locationName+' — Report '+fD(d.date)+'</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:\'DM Sans\',sans-serif;color:#1a1a1a;background:#fff}@media print{@page{margin:.5in;size:letter}.no-print{display:none!important}.report{padding:0}}.toolbar{position:sticky;top:0;background:#2d0e2e;padding:12px 20px;display:flex;gap:10px;justify-content:center;z-index:10}.toolbar button{padding:9px 20px;border-radius:6px;border:0;font-family:\'DM Sans\',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer}.tb-print{background:#5d1b5f;color:#fff}.tb-email{background:#b08818;color:#fff}.tb-close{background:#eee;color:#333}.report{max-width:900px;margin:0 auto;padding:30px 40px}.banner{background:linear-gradient(135deg,#5d1b5f,#7a2d7d);color:#fff;padding:14px 20px;border-radius:8px;margin-bottom:20px}.banner .org{font-family:\'Playfair Display\',serif;font-size:1.05rem}.banner .org-sub{font-size:.73rem;opacity:.85;margin-top:2px}.rpt-hdr{border-bottom:3px solid #5d1b5f;padding-bottom:16px;margin-bottom:18px;text-align:center}.rpt-hdr h1{font-family:\'Playfair Display\',serif;font-size:1.5rem;color:#5d1b5f;margin-bottom:4px}.rpt-hdr .rpt-date{font-family:\'Playfair Display\',serif;font-size:1.8rem;font-weight:900;color:#1a1a1a}.sec-hdr{background:#f5f2f8;border-left:4px solid #5d1b5f;padding:10px 14px;margin:20px 0 8px;font-weight:700;font-size:.86rem;color:#5d1b5f;display:flex;justify-content:space-between;align-items:center}.sec-hdr.staff-sec{border-left-color:#b08818;color:#b08818;background:#faf5e8}.sec-hdr .cnt{font-size:.7rem;font-weight:600;background:#fff;padding:3px 10px;border-radius:12px}.home-hdr{font-size:.76rem;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.8px;padding:8px 0 4px;margin-top:10px;border-bottom:1px solid #e0e0e0}.rt{width:100%;border-collapse:collapse;font-size:.74rem;margin-bottom:4px}.rt th{background:#5d1b5f;color:#fff;padding:5px 8px;text-align:left;font-weight:600;font-size:.64rem;text-transform:uppercase;letter-spacing:.4px}.rt.staff th{background:#b08818}.rt td{padding:4px 8px;border-bottom:1px solid #e8e8e8}.rt tr:nth-child(even){background:#fafaf8}.footer{margin-top:20px;padding-top:10px;border-top:2px solid #e0e0e0;font-size:.68rem;color:#999;text-align:right}</style></head><body><div class="toolbar no-print"><button class="tb-print" onclick="window.print()">Print / Save as PDF</button><button class="tb-email" onclick="emailRpt()">Email Report</button><button class="tb-close" onclick="window.close()">Close</button></div><div class="report"><div class="banner"><div class="org">Our Lady of the Wayside — Home to Opportunity</div><div class="org-sub">Pathways Day Program — Arrival / Departure Log</div></div><div class="rpt-hdr"><h1>'+d.locationName+'</h1><div class="rpt-date">'+fD(d.date)+'</div></div><div class="sec-hdr">Participant Arrival / Departure Log<span class="cnt">'+(d.participants||[]).length+' Participants</span></div>'+(pT||'<p style="color:#999;padding:10px;font-size:.82rem">No participant data.</p>')+((d.staff||[]).length?'<div class="sec-hdr staff-sec"'+(pHomes.length>8?' style="page-break-before:always"':'')+'>Staff Attendance Log<span class="cnt">'+d.staff.length+' Staff</span></div>'+sT:'')+'<div class="footer">'+d.locationName+' · '+fD(d.date)+'</div></div><script>function emailRpt(){var em=prompt("Enter email address:","");if(!em)return;var s=encodeURIComponent("'+d.locationName+' Report — '+fD(d.date)+'");var b=encodeURIComponent("Attendance report attached.\\nUse Print > Save as PDF.");window.open("mailto:"+encodeURIComponent(em)+"?subject="+s+"&body="+b)}<\/script></body></html>'}
 
 async function openReport(key){const d=typeof key==='string'?await G('logs',key):key;if(!d)return;const w=window.open('','_blank');if(w){w.document.write(buildReport(d));w.document.close()}else toast('Allow pop-ups')}
-async function reportToday(){await saveDay();openReport(getPayload())}
+async function reportToday(){
+  const pl=getPayload();
+  const missingP=pl.participants.filter(p=>!p.timeOut);
+  const missingS=pl.staff.filter(s=>!s.timeOut);
+  if(missingP.length||missingS.length){
+    let msg='Cannot generate report — the following are not signed out:\n\n';
+    if(missingP.length)msg+='PARTICIPANTS:\n'+missingP.map(p=>p.name).join(', ')+'\n\n';
+    if(missingS.length)msg+='STAFF:\n'+missingS.map(s=>s.name).join(', ')+'\n\n';
+    msg+='Please sign everyone out first.';
+    alert(msg);return}
+  await saveDay();openReport(pl)}
 function rptView(){if(vKey)openReport(vKey)}
 
 function mkCSV(d){let c=d.locationName+' — '+fD(d.date)+'\n\nPARTICIPANTS\nName,Home,AAI,Time In,Time Out,Arrival Driver,Departure Driver\n';(d.participants||[]).forEach(p=>{c+='"'+p.name+'","'+p.home+'","'+p.aai+'","'+f12(p.timeIn)+'","'+f12(p.timeOut)+'","'+(p.driverIn||p.driver||'')+'","'+(p.driverOut||'')+'"\n'});c+='\nSTAFF\nName,House,Time In,Time Out\n';(d.staff||[]).forEach(s=>{c+='"'+s.name+'","'+(s.home||'')+'","'+f12(s.timeIn)+'","'+f12(s.timeOut)+'"\n'});return c}
@@ -293,10 +371,10 @@ $('logDate').valueAsDate=new Date();
 $('logDate').addEventListener('change',schSave);
 $('pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
 $('admEmail').addEventListener('change',e=>savSet({email:e.target.value}));
-$('sNameIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addStaff()}});
+$('newStaffIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addNewStaff()}});
 $('newDrv').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addDrv()}});
 
-(async function(){await loadInd();await restore();await loadDrv();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';bSB();rHomes();updateDash();bHomeList();renderStaff()})();
+(async function(){await loadInd();await restore();await loadDrv();await loadStaffRoster();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';bSB();rHomes();updateDash();bHomeList();renderStaff()})();
 </script>
 </body>
 </html>
