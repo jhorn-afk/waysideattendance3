@@ -297,9 +297,9 @@ function rStaffRoster(){
       c.className='dc';c.style.opacity='.4';c.style.pointerEvents='none';
       c.innerHTML='<span class="ck">✓</span><span class="dn">'+s.name+'</span><span class="ps-s ps-lk">✓ Done</span>'
     }else if(signedRow){
-      c.className='dc'+(selStaff===s.name?' sel':'');
-      c.innerHTML='<span class="ck">'+(selStaff===s.name?'✓':'')+'</span><span class="dn">'+s.name+'</span><span class="ps-s ps-in">⏱ Sign Out</span>';
-      c.onclick=()=>{selStaff=s.name;selStaffHouse=signedRow.home||'';goSS(3)}
+      c.className='dc';
+      c.innerHTML='<span class="ck"></span><span class="dn">'+s.name+'</span><span class="ps-s ps-in">⏱ Sign Out</span>';
+      (function(name,home){c.addEventListener('click',function(){selStaff=name;selStaffHouse=home;goSS(3)})})(s.name,signedRow.home||'');
     }else{
       c.className='dc'+(selStaff===s.name?' sel':'');
       c.innerHTML='<span class="ck">'+(selStaff===s.name?'✓':'')+'</span><span class="dn">'+s.name+'</span><span class="df">'+(s.uses?s.uses+' day'+(s.uses!==1?'s':''):'new')+'</span>';
@@ -371,9 +371,8 @@ function renderSignedStaff(){
       const noteShow=noteVal?'<div style="font-size:.7rem;color:var(--gold-dk);margin-top:4px;font-style:italic">Note: '+noteVal+'</div>':'';
       card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · '+f12(r.timeIn)+' → '+f12(r.timeOut)+'</div>'+noteShow+'</div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--grn);font-weight:700">✓ Locked</span>'+ub+'</div></div>'
     } else if(r.signedIn){
-      card.style.cursor='pointer';
-      card.onclick=(function(name,home){return function(){selStaff=name;selStaffHouse=home;goSS(3)}})(r.name,r.home);
-      card.innerHTML='<div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · In: '+f12(r.timeIn)+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:.72rem;color:var(--gold);font-weight:700">⏱ Tap to Sign Out</span></div></div><div style="margin-top:8px"><input type="text" class="si" style="font-size:.8rem;padding:7px 10px" placeholder="Add a note (optional)..." value="'+noteVal.replace(/"/g,'&quot;')+'" onclick="event.stopPropagation()" onchange="updateStaffNote('+idx+',this.value)"></div></div>'
+      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · In: '+f12(r.timeIn)+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:.72rem;color:var(--gold);font-weight:700">⏱ Signed In</span><button class="btn bg bs" style="padding:6px 14px;font-size:.76rem" data-soidx="'+idx+'">Sign Out</button></div></div><div style="margin-top:8px"><input type="text" class="si" style="font-size:.8rem;padding:7px 10px" placeholder="Add a note (optional)..." value="'+noteVal.replace(/"/g,'&quot;')+'" onchange="updateStaffNote('+idx+',this.value)"></div>';
+      card.querySelector('[data-soidx]').addEventListener('click',function(e){e.stopPropagation();selStaff=r.name;selStaffHouse=r.home||'';goSS(3)});
     }
     list.appendChild(card)})}
 
