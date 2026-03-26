@@ -288,13 +288,23 @@ function updateStaffDash(){const rows=sr[loc]||[];const roster=staffRoster[loc]|
 function rStaffRoster(){
   const el=$('staffRoster');el.innerHTML='';
   const roster=(staffRoster[loc]||[]).slice().sort((a,b)=>(b.uses||0)-(a.uses||0));
-  const signedNames=new Set((sr[loc]||[]).map(r=>r.name));
+  const rows=sr[loc]||[];
   roster.forEach(s=>{
-    const alreadyIn=signedNames.has(s.name);
-    const c=document.createElement('div');c.className='dc'+(selStaff===s.name?' sel':'')+(alreadyIn&&selStaff!==s.name?' sel':'');
-    if(alreadyIn&&selStaff!==s.name){c.style.opacity='.5'}
-    c.innerHTML='<span class="ck">'+(selStaff===s.name?'✓':(alreadyIn?'✓':''))+'</span><span class="dn">'+s.name+'</span><span class="df">'+(s.uses?s.uses+' day'+(s.uses!==1?'s':''):'new')+'</span>';
-    c.onclick=()=>{selStaff=selStaff===s.name?null:s.name;rStaffRoster()};
+    const signedRow=rows.find(r=>r.name===s.name&&r.signedIn&&!r.fullyLocked);
+    const lockedRow=rows.find(r=>r.name===s.name&&r.fullyLocked);
+    const c=document.createElement('div');
+    if(lockedRow){
+      c.className='dc';c.style.opacity='.4';c.style.pointerEvents='none';
+      c.innerHTML='<span class="ck">✓</span><span class="dn">'+s.name+'</span><span class="ps-s ps-lk">✓ Done</span>'
+    }else if(signedRow){
+      c.className='dc'+(selStaff===s.name?' sel':'');
+      c.innerHTML='<span class="ck">'+(selStaff===s.name?'✓':'')+'</span><span class="dn">'+s.name+'</span><span class="ps-s ps-in">⏱ Sign Out</span>';
+      c.onclick=()=>{selStaff=s.name;selStaffHouse=signedRow.home||'';goSS(3)}
+    }else{
+      c.className='dc'+(selStaff===s.name?' sel':'');
+      c.innerHTML='<span class="ck">'+(selStaff===s.name?'✓':'')+'</span><span class="dn">'+s.name+'</span><span class="df">'+(s.uses?s.uses+' day'+(s.uses!==1?'s':''):'new')+'</span>';
+      c.onclick=()=>{selStaff=selStaff===s.name?null:s.name;rStaffRoster()}
+    }
     el.appendChild(c)});
   if(!roster.length)el.innerHTML='<p style="color:var(--mut);text-align:center;padding:16px;font-size:.85rem">No staff yet — add above or go to Admin</p>';
   $('ss1n').disabled=!selStaff}
