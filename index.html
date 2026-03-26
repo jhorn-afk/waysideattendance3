@@ -371,7 +371,9 @@ function renderSignedStaff(){
       const noteShow=noteVal?'<div style="font-size:.7rem;color:var(--gold-dk);margin-top:4px;font-style:italic">Note: '+noteVal+'</div>':'';
       card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · '+f12(r.timeIn)+' → '+f12(r.timeOut)+'</div>'+noteShow+'</div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--grn);font-weight:700">✓ Locked</span>'+ub+'</div></div>'
     } else if(r.signedIn){
-      card.innerHTML='<div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · In: '+f12(r.timeIn)+'</div></div><span style="font-size:.72rem;color:var(--gold);font-weight:700">⏱ Signed In</span></div><div style="margin-top:8px"><input type="text" class="si" style="font-size:.8rem;padding:7px 10px" placeholder="Add a note (optional)..." value="'+noteVal.replace(/"/g,'&quot;')+'" onchange="updateStaffNote('+idx+',this.value)"></div></div>'
+      card.style.cursor='pointer';
+      card.onclick=(function(name,home){return function(){selStaff=name;selStaffHouse=home;goSS(3)}})(r.name,r.home);
+      card.innerHTML='<div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · In: '+f12(r.timeIn)+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:.72rem;color:var(--gold);font-weight:700">⏱ Tap to Sign Out</span></div></div><div style="margin-top:8px"><input type="text" class="si" style="font-size:.8rem;padding:7px 10px" placeholder="Add a note (optional)..." value="'+noteVal.replace(/"/g,'&quot;')+'" onclick="event.stopPropagation()" onchange="updateStaffNote('+idx+',this.value)"></div></div>'
     }
     list.appendChild(card)})}
 
