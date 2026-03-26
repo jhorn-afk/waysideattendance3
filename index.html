@@ -152,10 +152,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 <!-- Staff -->
 <div class="page" id="sPage">
   <div class="fc"><label>Date</label><div style="font-weight:600;font-size:.92rem" id="sDateShow"></div></div>
-  <div class="wt" style="margin-bottom:4px">Staff Sign-In</div>
-  <div class="wst">Tap a staff member to sign in, or add someone new</div>
-  <div style="display:flex;gap:8px;margin-bottom:14px"><input type="text" class="si" id="newStaffIn" placeholder="Add new staff name..."><button class="btn bg bs" onclick="addNewStaff()">Add</button></div>
-  <div id="staffRoster"></div>
+  <div class="dash"><div class="dash-c"><div class="dv" id="sdIn">0</div><div class="dl">Staff In</div></div><div class="dash-c"><div class="dv" id="sdDone">0</div><div class="dl">Complete</div></div><div class="dash-c"><div class="dv" id="sdRem">0</div><div class="dl">Not In</div></div></div>
+  <div class="sb" id="sStepBar"></div>
+  <!-- Staff Step 1: Select Staff -->
+  <div class="ws on" id="ss1"><div class="wt">Select Staff</div><div class="wst">Tap a staff member or add someone new</div><div style="display:flex;gap:8px;margin-bottom:14px"><input type="text" class="si" id="newStaffIn" placeholder="Add new staff name..."><button class="btn bg bs" onclick="addNewStaffToRoster()">Add</button></div><div id="staffRoster"></div><div class="wn"><button class="btn bp" id="ss1n" onclick="goSS(2)" disabled>Next →</button></div></div>
+  <!-- Staff Step 2: Select House -->
+  <div class="ws" id="ss2"><div class="wt">Select House</div><div class="wst">Which house are you staffing today?</div><div style="display:flex;gap:8px;margin-bottom:14px"><input type="text" class="si" id="newStaffHouse" placeholder="Add new house..."><button class="btn bg bs" onclick="addStaffHouse()">Add</button></div><div class="hg" id="staffHouseGrid"></div><div class="wn"><button class="btn bb" onclick="goSS(1)">← Staff</button><button class="btn bp" id="ss2n" onclick="goSS(3)" disabled>Next →</button></div></div>
+  <!-- Staff Step 3: Time -->
+  <div class="ws" id="ss3"><div class="wt" id="ss3title">Sign In or Out</div><div class="wst">Set the action and time</div><div class="at"><button class="ao ai" id="sOptIn" onclick="setStaffAct('in')">☀️ Sign In</button><button class="ao" id="sOptOut" onclick="setStaffAct('out')">🌙 Sign Out</button></div><div class="td"><input type="time" id="sWTime"><div class="tl">Tap to adjust time</div></div><div class="cs" id="sCSum"></div><div class="wn"><button class="btn bb" onclick="goSS(2)">← House</button><button class="btn bc" onclick="doStaffConfirm()">✓ Confirm</button></div></div>
+  <!-- Signed-in staff list -->
   <div style="text-align:center;font-size:.74rem;color:var(--mut);margin:10px 0 4px" id="sCtr"></div>
   <div id="sList"></div>
   <datalist id="hl"></datalist>
@@ -166,7 +171,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
   <div class="adash" id="aDash">
     <div class="asec" id="secActions"><h3>Quick Actions</h3><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn bp bs" onclick="saveDay()">💾 Save Log</button><button class="btn bg bs" onclick="reportToday()">📄 Report</button><button class="btn bb bs" onclick="showSum()">📊 Summary</button><button class="btn bb bs" onclick="exportAllCSV()">Export CSV</button><button class="btn bd bs" onclick="clearToday()">Clear Today</button></div></div>
     <div class="asec" id="secManage"><h3>Manage Individuals — <span id="manLoc"></span></h3><div class="add-form"><input type="text" id="addName" placeholder="Full Name"><input type="text" id="addHome" placeholder="Home Name"><select id="addAAI"><option value="A">A</option><option value="B">B</option><option value="C" selected>C</option><option value="1:1">1:1</option></select><button class="btn bp bs" onclick="addInd()">Add</button></div><div style="margin-bottom:8px"><label style="font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.7px;color:var(--mut);display:block;margin-bottom:4px">Homes</label><div id="homeChips"></div></div><div class="manage-list" id="manList"></div><div style="margin-top:6px;font-size:.72rem;color:var(--mut)" id="manCt"></div></div>
-    <div class="asec" id="secStaffMgr"><h3>Manage Staff Roster — <span id="staffManLoc"></span></h3><p style="font-size:.74rem;color:var(--mut);margin-bottom:8px">Staff added here appear as tap-to-select on the Staff tab</p><div style="display:flex;gap:6px;margin-bottom:10px"><input type="text" id="addStaffName" placeholder="Staff Full Name" style="flex:1;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><input type="text" id="addStaffHome" placeholder="Home (optional)" style="flex:.7;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem" list="hl2"><button class="btn bg bs" onclick="addStaffRoster()">Add</button></div><datalist id="hl2"></datalist><div id="staffManList"></div><div style="margin-top:6px;font-size:.72rem;color:var(--mut)" id="staffManCt"></div></div>
+    <div class="asec" id="secStaffMgr"><h3>Manage Staff — <span id="staffManLoc"></span></h3><p style="font-size:.74rem;color:var(--mut);margin-bottom:8px">Staff names appear as tap-to-select on the Staff tab</p><div style="display:flex;gap:6px;margin-bottom:10px"><input type="text" id="addStaffName" placeholder="Staff Full Name" style="flex:1;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><button class="btn bg bs" onclick="addStaffRoster()">Add Staff</button></div><div id="staffManList"></div><div style="margin-top:6px;font-size:.72rem;color:var(--mut)" id="staffManCt"></div></div>
+    <div class="asec" id="secStaffHouses"><h3>Manage Staff Houses — <span id="staffHouseLoc"></span></h3><p style="font-size:.74rem;color:var(--mut);margin-bottom:8px">Houses available for staff to select on the Staff tab</p><div style="display:flex;gap:6px;margin-bottom:10px"><input type="text" id="addStaffHouseName" placeholder="House name" style="flex:1;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><button class="btn bg bs" onclick="addStaffHouseAdmin()">Add House</button></div><div id="staffHouseChips"></div></div>
     <div class="asec" id="secLogs"><h3>Saved Logs — <span id="logLoc"></span></h3><div class="loglist" id="logList"><p style="color:var(--mut);font-size:.8rem;padding:8px">No saved logs yet.</p></div></div>
     <div class="asec" id="secViewers"><h3>Report Viewers</h3><p style="font-size:.74rem;color:var(--mut);margin-bottom:8px">Add people who can view and print reports (read-only access)</p><div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap"><input type="text" id="vuName" placeholder="Name" style="flex:1;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><input type="password" id="vuPin" placeholder="4-digit PIN" maxlength="4" inputmode="numeric" style="width:100px;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><select id="vuLoc" style="padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.85rem"><option value="all">All Locations</option></select><button class="btn bp bs" onclick="addViewer()">Add</button></div><div id="vuList"></div></div>
     <div class="asec" id="secSettings"><h3>Settings</h3><div class="fr fr2"><div><label>Admin Email</label><input type="email" id="admEmail" placeholder="your@email.com"></div><div><label>Change Admin PIN</label><div style="display:flex;gap:6px"><input type="password" id="newPin" placeholder="4-digit" maxlength="4" inputmode="numeric" style="flex:1;padding:8px;border:2px solid var(--bdr);border-radius:6px;font-family:'DM Sans',sans-serif"><button class="mb mb-v" onclick="setPin()">Set</button></div></div></div></div>
@@ -185,7 +191,7 @@ let loc='westlake',ind={},pt={},sr={},sic={},drv={};
 let step=1,selH=new Set(),selP=new Set(),selD=null,act='in';
 let vKey=null,admOK=false,rptOK=false;
 
-function odb(){return new Promise((res,rej)=>{const r=indexedDB.open('PathwaysAppV3',2);r.onupgradeneeded=e=>{const db=e.target.result;['individuals','state','logs','settings','drivers','viewers','staffroster'].forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s)})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function odb(){return new Promise((res,rej)=>{const r=indexedDB.open('PathwaysAppV3',3);r.onupgradeneeded=e=>{const db=e.target.result;['individuals','state','logs','settings','drivers','viewers','staffroster','staffhouses'].forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s)})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function D(s,k,v){const db=await odb();const tx=db.transaction(s,'readwrite');tx.objectStore(s).put(JSON.parse(JSON.stringify(v)),k);await new Promise(r=>{tx.oncomplete=r})}
 async function G(s,k){try{const db=await odb();const tx=db.transaction(s,'readonly');const rq=tx.objectStore(s).get(k);return new Promise(r=>{rq.onsuccess=()=>r(rq.result)})}catch(e){return undefined}}
 async function A(s){const db=await odb();const tx=db.transaction(s,'readonly');const st=tx.objectStore(s);const ks=await new Promise(r=>{const q=st.getAllKeys();q.onsuccess=()=>r(q.result)});const vs=await new Promise(r=>{const q=st.getAll();q.onsuccess=()=>r(q.result)});return ks.map((k,i)=>({key:k,value:vs[i]}))}
@@ -205,7 +211,7 @@ function now(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':
 function today(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
 function getSelHomes(){return[...selH]}
 
-function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';if(admOK){$('manLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();renderManage();renderStaffManage();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderStaff();bHomeList()};el.appendChild(b)})}
+function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';if(admOK){$('manLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();$('staffHouseLoc').textContent=lS();renderManage();renderStaffManage();renderStaffHouses();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();resetStaffWiz();updateStaffDash();renderSignedStaff();bHomeList()};el.appendChild(b)})}
 
 let svT=null;
 function schSave(){clearTimeout(svT);svT=setTimeout(async()=>{const state={_driver:$('driverName').value,_date:$('logDate').value};LOCS.forEach(l=>{state[l.id]={pt:pt[l.id]||{},sr:sr[l.id]||[],sic:sic[l.id]||1}});await D('state','current',state);$('autoSave').textContent='Saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},500)}
@@ -218,7 +224,7 @@ async function loadSettings(){const s=await G('settings','admin');if(s&&s.email)
 async function getPin(){const s=await G('settings','admin');return(s&&s.pin)||'1234'}
 async function savSet(obj){const c=(await G('settings','admin'))||{};await D('settings','admin',{...c,...obj})}
 
-function goPage(p){document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));$(p).classList.add('on');document.querySelectorAll('.mt').forEach(t=>t.classList.toggle('on',t.dataset.p===p));if(p==='sPage')renderStaff()}
+function goPage(p){document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));$(p).classList.add('on');document.querySelectorAll('.mt').forEach(t=>t.classList.toggle('on',t.dataset.p===p));if(p==='sPage'){renderStaff();updateStaffDash();renderSignedStaff()}}
 function updateDash(){const pp=cP(),t=pt[loc]||{};let si=0,done=0;pp.forEach((_,i)=>{if(t[i]){if(t[i].fullyLocked)done++;else if(t[i].signedIn)si++}});$('dIn').textContent=si;$('dDone').textContent=done;$('dRem').textContent=pp.length-si-done}
 
 function goStep(n){step=n;document.querySelectorAll('.ws').forEach(s=>s.classList.remove('on'));$('s'+n).classList.add('on');bSB();if(n===1)rHomes();if(n===2)rPpl();if(n===3)rDrv();if(n===4){$('wTime').value=now();autoSetAct();rCS()}}
@@ -241,65 +247,119 @@ function rCS(){const el=$('cSum');const pp=cP();let h='<div class="cs-l">'+(act=
 
 function doConfirm(){const time=$('wTime').value;if(!time){toast('Set a time');return}const pp=cP(),t=pt[loc];let c=0;const drName=selD||'';selP.forEach(i=>{if(!t[i])t[i]={timeIn:'',timeOut:'',signedIn:false,fullyLocked:false,driverIn:'',driverOut:''};if(act==='in'){if(!t[i].signedIn){t[i].timeIn=time;t[i].signedIn=true;t[i].driverIn=drName;c++}}else{if(t[i].signedIn&&!t[i].fullyLocked){t[i].timeOut=time;t[i].fullyLocked=true;t[i].driverOut=drName;c++}else if(!t[i].signedIn){t[i].timeIn=time;t[i].timeOut=time;t[i].signedIn=true;t[i].fullyLocked=true;t[i].driverIn=drName;t[i].driverOut=drName;c++}}});if(drName){if(!drv[loc])drv[loc]={};[...selH].forEach(h=>{if(!drv[loc][h])drv[loc][h]=[];let d=drv[loc][h].find(d=>d.name.toLowerCase()===drName.toLowerCase());if(!d)drv[loc][h].push({name:drName,uses:1});else d.uses=(d.uses||0)+1});saveDrv()}$('driverName').value=drName;schSave();toast('✓ '+c+' '+(act==='in'?'signed in':'signed out'));updateDash();checkAllDone();resetWiz()}
 
-function bHomeList(){const dl=$('hl');dl.innerHTML='';['Pathways Westlake','Float'].forEach(x=>{const o=document.createElement('option');o.value=x;dl.appendChild(o)});cH().forEach(h=>{const o=document.createElement('option');o.value=h;dl.appendChild(o)});const dl2=$('hl2');if(dl2){dl2.innerHTML=dl.innerHTML}}
+function bHomeList(){const dl=$('hl');dl.innerHTML='';cH().forEach(h=>{const o=document.createElement('option');o.value=h;dl.appendChild(o)})}
 
-// Staff roster stored in IndexedDB per location
-let staffRoster={};
-async function loadStaffRoster(){for(const l of LOCS){const sv=await G('staffroster',l.id);staffRoster[l.id]=sv||[]}}
+// Staff roster + houses stored per location
+let staffRoster={},staffHouses={};
+let sStep=1,selStaff=null,selStaffHouse=null,sAct='in';
+async function loadStaffRoster(){for(const l of LOCS){const sv=await G('staffroster',l.id);staffRoster[l.id]=sv||[];const sh=await G('staffhouses',l.id);staffHouses[l.id]=sh||['Pathways Westlake','Float']}}
 async function saveStaffRoster(){await D('staffroster',loc,staffRoster[loc]||[])}
+async function saveStaffHouses(){await D('staffhouses',loc,staffHouses[loc]||[])}
 
-// Admin: manage staff roster
+// Admin: manage staff names
 function renderStaffManage(){
   const roster=staffRoster[loc]||[];const el=$('staffManList');el.innerHTML='';
   $('staffManLoc').textContent=lS();
-  if(!roster.length){el.innerHTML='<p style="color:var(--mut);font-size:.78rem">No staff added for this location.</p>';$('staffManCt').textContent='';return}
-  roster.sort((a,b)=>a.name.localeCompare(b.name)).forEach((s,i)=>{
+  if(!roster.length){el.innerHTML='<p style="color:var(--mut);font-size:.78rem">No staff added.</p>';$('staffManCt').textContent='';return}
+  roster.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach((s,i)=>{
     const row=document.createElement('div');row.className='m-row';
-    row.innerHTML='<span class="m-nm">'+s.name+'</span><span class="m-hm">'+(s.home||'—')+'</span><button class="mb mb-d" onclick="rmStaffRoster('+i+')">Remove</button>';
+    row.innerHTML='<span class="m-nm">'+s.name+'</span><span class="df">'+(s.uses||0)+' days</span><button class="mb mb-d" onclick="rmStaffRoster('+i+')">Remove</button>';
     el.appendChild(row)});
-  $('staffManCt').textContent=roster.length+' staff members'}
-async function addStaffRoster(){const nm=$('addStaffName').value.trim();const hm=$('addStaffHome').value.trim();if(!nm){toast('Enter staff name');return}if(!staffRoster[loc])staffRoster[loc]=[];if(staffRoster[loc].find(s=>s.name.toLowerCase()===nm.toLowerCase())){toast('Already exists');return}staffRoster[loc].push({name:nm,home:hm,uses:0});await saveStaffRoster();$('addStaffName').value='';$('addStaffHome').value='';renderStaffManage();toast('Added '+nm)}
-async function rmStaffRoster(idx){const s=staffRoster[loc][idx];if(!confirm('Remove '+s.name+'?'))return;staffRoster[loc].splice(idx,1);await saveStaffRoster();renderStaffManage();toast('Removed '+s.name)}
+  $('staffManCt').textContent=roster.length+' staff'}
+async function addStaffRoster(){const nm=$('addStaffName').value.trim();if(!nm){toast('Enter staff name');return}if(!staffRoster[loc])staffRoster[loc]=[];if(staffRoster[loc].find(s=>s.name.toLowerCase()===nm.toLowerCase())){toast('Already exists');return}staffRoster[loc].push({name:nm,uses:0});await saveStaffRoster();$('addStaffName').value='';renderStaffManage();toast('Added '+nm)}
+async function rmStaffRoster(idx){const s=staffRoster[loc][idx];if(!confirm('Remove '+s.name+'?'))return;staffRoster[loc].splice(idx,1);await saveStaffRoster();renderStaffManage();toast('Removed')}
 
-// Staff tab: tap to sign in from roster
-function signInFromRoster(name,home){
-  if(!sr[loc])sr[loc]=[];if(!sic[loc])sic[loc]=1;
-  sr[loc].push({id:sic[loc]++,name:name,home:home||'',timeIn:now(),timeOut:'',signedIn:true,fullyLocked:false});
-  // increment uses
-  const r=(staffRoster[loc]||[]).find(s=>s.name===name);if(r)r.uses=(r.uses||0)+1;saveStaffRoster();
-  schSave();renderStaff();toast(name+' signed in')}
-function addNewStaff(){const nm=$('newStaffIn').value.trim();if(!nm){toast('Enter staff name');return}
-  // Also add to roster if not there
-  if(!staffRoster[loc])staffRoster[loc]=[];
-  if(!staffRoster[loc].find(s=>s.name.toLowerCase()===nm.toLowerCase())){staffRoster[loc].push({name:nm,home:'',uses:0});saveStaffRoster()}
-  signInFromRoster(nm,'')}
-function signOutStaff(idx){const r=sr[loc][idx];r.timeOut=now();r.fullyLocked=true;schSave();renderStaff();toast(r.name+' signed out');checkAllDone()}
-function adminUnlockStaff(idx){sr[loc][idx].signedIn=false;sr[loc][idx].fullyLocked=false;sr[loc][idx].timeIn='';sr[loc][idx].timeOut='';schSave();renderStaff();toast('Entry unlocked')}
-function rmStaff(idx){if(sr[loc][idx].signedIn){toast('Cannot remove — use Admin unlock');return}sr[loc].splice(idx,1);schSave();renderStaff()}
-function updateStaffTime(idx,field,val){sr[loc][idx][field]=val;schSave()}
+// Admin: manage staff houses
+function renderStaffHouses(){
+  $('staffHouseLoc').textContent=lS();
+  const houses=staffHouses[loc]||[];const el=$('staffHouseChips');
+  el.innerHTML=houses.length?houses.map((h,i)=>'<span class="home-chip">'+h+'<button onclick="rmStaffHouseAdmin('+i+')">✕</button></span>').join(''):'<span style="font-size:.78rem;color:var(--mut)">No houses yet</span>'}
+async function addStaffHouseAdmin(){const nm=$('addStaffHouseName').value.trim();if(!nm){toast('Enter house name');return}if(!staffHouses[loc])staffHouses[loc]=[];if(staffHouses[loc].find(h=>h.toLowerCase()===nm.toLowerCase())){toast('Already exists');return}staffHouses[loc].push(nm);await saveStaffHouses();$('addStaffHouseName').value='';renderStaffHouses();toast('Added '+nm)}
+async function rmStaffHouseAdmin(idx){const h=staffHouses[loc][idx];if(!confirm('Remove "'+h+'"?'))return;staffHouses[loc].splice(idx,1);await saveStaffHouses();renderStaffHouses();toast('Removed')}
 
-function renderStaff(){
-  $('sDateShow').textContent=fD($('logDate').value);
-  // Render roster (tap to sign in)
-  const rosterEl=$('staffRoster');rosterEl.innerHTML='';
+// Staff wizard
+function goSS(n){sStep=n;document.querySelectorAll('#sPage .ws').forEach(s=>s.classList.remove('on'));$('ss'+n).classList.add('on');bSSB();if(n===1)rStaffRoster();if(n===2)rStaffHouseGrid();if(n===3){$('sWTime').value=now();autoSetStaffAct();rSCSum()}}
+function bSSB(){const b=$('sStepBar');b.innerHTML='';for(let i=1;i<=3;i++){const d=document.createElement('span');d.className='sd'+(i===sStep?' now':i<sStep?' ok':'');d.textContent=i;b.appendChild(d);if(i<3){const l=document.createElement('span');l.className='sl'+(i<sStep?' ok':'');b.appendChild(l)}}}
+function resetStaffWiz(){selStaff=null;selStaffHouse=null;sAct='in';goSS(1)}
+
+function updateStaffDash(){const rows=sr[loc]||[];const roster=staffRoster[loc]||[];let si=0,done=0;rows.forEach(r=>{if(r.fullyLocked)done++;else if(r.signedIn)si++});$('sdIn').textContent=si;$('sdDone').textContent=done;$('sdRem').textContent=Math.max(0,roster.length-si-done)}
+
+// Step 1: select staff
+function rStaffRoster(){
+  const el=$('staffRoster');el.innerHTML='';
   const roster=(staffRoster[loc]||[]).slice().sort((a,b)=>(b.uses||0)-(a.uses||0));
   const signedNames=new Set((sr[loc]||[]).map(r=>r.name));
   roster.forEach(s=>{
     const alreadyIn=signedNames.has(s.name);
-    const c=document.createElement('div');c.className='dc'+(alreadyIn?' sel':'');c.style.opacity=alreadyIn?'.5':'1';
-    c.innerHTML='<span class="ck">'+(alreadyIn?'✓':'')+'</span><span class="dn">'+s.name+'</span><span class="df">'+(s.home||'—')+(s.uses?' · '+s.uses+' day'+(s.uses!==1?'s':''):'')+'</span>';
-    if(!alreadyIn)c.onclick=()=>signInFromRoster(s.name,s.home);
-    rosterEl.appendChild(c)});
-  if(!roster.length)rosterEl.innerHTML='<p style="color:var(--mut);text-align:center;padding:16px;font-size:.85rem">No staff roster yet — add someone above or go to Admin to manage staff</p>';
+    const c=document.createElement('div');c.className='dc'+(selStaff===s.name?' sel':'')+(alreadyIn&&selStaff!==s.name?' sel':'');
+    if(alreadyIn&&selStaff!==s.name){c.style.opacity='.5'}
+    c.innerHTML='<span class="ck">'+(selStaff===s.name?'✓':(alreadyIn?'✓':''))+'</span><span class="dn">'+s.name+'</span><span class="df">'+(s.uses?s.uses+' day'+(s.uses!==1?'s':''):'new')+'</span>';
+    c.onclick=()=>{selStaff=selStaff===s.name?null:s.name;rStaffRoster()};
+    el.appendChild(c)});
+  if(!roster.length)el.innerHTML='<p style="color:var(--mut);text-align:center;padding:16px;font-size:.85rem">No staff yet — add above or go to Admin</p>';
+  $('ss1n').disabled=!selStaff}
 
-  // Render signed-in staff cards
+function addNewStaffToRoster(){const nm=$('newStaffIn').value.trim();if(!nm){toast('Enter staff name');return}
+  if(!staffRoster[loc])staffRoster[loc]=[];
+  if(!staffRoster[loc].find(s=>s.name.toLowerCase()===nm.toLowerCase())){staffRoster[loc].push({name:nm,uses:0});saveStaffRoster()}
+  selStaff=nm;$('newStaffIn').value='';rStaffRoster()}
+
+// Step 2: select house
+function rStaffHouseGrid(){
+  const g=$('staffHouseGrid');g.innerHTML='';
+  const houses=staffHouses[loc]||[];
+  houses.forEach(h=>{
+    const c=document.createElement('div');c.className='hc'+(selStaffHouse===h?' sel':'');
+    c.innerHTML='<div class="hi">🏠</div><div class="hn">'+h+'</div>';
+    c.onclick=()=>{selStaffHouse=selStaffHouse===h?null:h;rStaffHouseGrid()};
+    g.appendChild(c)});
+  if(!houses.length)g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--mut)">No houses yet — add above or go to Admin</div>';
+  $('ss2n').disabled=!selStaffHouse}
+function addStaffHouse(){const nm=$('newStaffHouse').value.trim();if(!nm)return;
+  if(!staffHouses[loc])staffHouses[loc]=[];
+  if(!staffHouses[loc].find(h=>h.toLowerCase()===nm.toLowerCase())){staffHouses[loc].push(nm);saveStaffHouses()}
+  selStaffHouse=nm;$('newStaffHouse').value='';rStaffHouseGrid()}
+
+// Step 3: time
+function autoSetStaffAct(){
+  const rows=sr[loc]||[];
+  const existing=rows.find(r=>r.name===selStaff&&r.signedIn&&!r.fullyLocked);
+  if(existing){sAct='out';$('sOptIn').disabled=true;$('sOptOut').disabled=false}
+  else{sAct='in';$('sOptIn').disabled=false;$('sOptOut').disabled=false}
+  $('sOptIn').className='ao'+(sAct==='in'?' ai':'');$('sOptOut').className='ao'+(sAct==='out'?' ao-out':'')}
+function setStaffAct(a){if(a==='in'&&$('sOptIn').disabled)return;sAct=a;$('sOptIn').className='ao'+(a==='in'?' ai':'');$('sOptOut').className='ao'+(a==='out'?' ao-out':'');rSCSum()}
+function rSCSum(){const el=$('sCSum');el.innerHTML='<div class="cs-l">'+(sAct==='in'?'☀️ Sign In':'🌙 Sign Out')+' · '+selStaff+'</div><div class="cs-i"><span>House: '+(selStaffHouse||'—')+'</span></div>'}
+
+function doStaffConfirm(){
+  const time=$('sWTime').value;if(!time){toast('Set a time');return}
+  if(!sr[loc])sr[loc]=[];if(!sic[loc])sic[loc]=1;
+  if(sAct==='in'){
+    const already=(sr[loc]||[]).find(r=>r.name===selStaff&&r.signedIn);
+    if(already){toast(selStaff+' is already signed in');resetStaffWiz();return}
+    sr[loc].push({id:sic[loc]++,name:selStaff,home:selStaffHouse||'',timeIn:time,timeOut:'',signedIn:true,fullyLocked:false});
+    const r=(staffRoster[loc]||[]).find(s=>s.name===selStaff);if(r){r.uses=(r.uses||0)+1;saveStaffRoster()}
+    toast(selStaff+' signed in')
+  }else{
+    const row=(sr[loc]||[]).find(r=>r.name===selStaff&&r.signedIn&&!r.fullyLocked);
+    if(row){row.timeOut=time;row.fullyLocked=true;toast(selStaff+' signed out')}
+    else{toast('Not signed in');resetStaffWiz();return}
+  }
+  schSave();updateStaffDash();renderSignedStaff();checkAllDone();resetStaffWiz()}
+
+function signOutStaffCard(idx){const r=sr[loc][idx];r.timeOut=now();r.fullyLocked=true;schSave();updateStaffDash();renderSignedStaff();toast(r.name+' signed out');checkAllDone()}
+function adminUnlockStaff(idx){sr[loc][idx].signedIn=false;sr[loc][idx].fullyLocked=false;sr[loc][idx].timeIn='';sr[loc][idx].timeOut='';schSave();updateStaffDash();renderSignedStaff();toast('Entry unlocked')}
+function updateStaffTime(idx,field,val){sr[loc][idx][field]=val;schSave()}
+
+function renderSignedStaff(){
   const list=$('sList');const rows=sr[loc]||[];list.innerHTML='';
   const filled=rows.filter(r=>r.signedIn).length;const done=rows.filter(r=>r.fullyLocked).length;
   $('sCtr').innerHTML=filled?'<b>'+filled+'</b> signed in · <b>'+done+'</b> complete':'';
   rows.forEach((r,idx)=>{const card=document.createElement('div');card.className='sc-card'+(r.fullyLocked?' locked':r.signedIn?' signed':'');
     if(r.fullyLocked){const ub=admOK?'<button class="mb mb-d" onclick="adminUnlockStaff('+idx+')">Unlock</button>':'';card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · '+f12(r.timeIn)+' → '+f12(r.timeOut)+'</div></div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--grn);font-weight:700">✓ Locked</span>'+ub+'</div></div>'}
-    else if(r.signedIn){card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><label style="font-size:.66rem;color:var(--mut)">In:</label><input type="time" class="ti-edit" value="'+r.timeIn+'" onchange="updateStaffTime('+idx+',\'timeIn\',this.value)"><label style="font-size:.66rem;color:var(--mut)">Out:</label><input type="time" class="ti-edit" value="'+(r.timeOut||'')+'" onchange="updateStaffTime('+idx+',\'timeOut\',this.value)"><button class="btn bc bs" style="padding:6px 12px;font-size:.74rem" onclick="signOutStaff('+idx+')">Sign Out</button></div></div>'}
+    else if(r.signedIn){card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><label style="font-size:.66rem;color:var(--mut)">In:</label><input type="time" class="ti-edit" value="'+r.timeIn+'" onchange="updateStaffTime('+idx+',\'timeIn\',this.value)"><label style="font-size:.66rem;color:var(--mut)">Out:</label><input type="time" class="ti-edit" value="'+(r.timeOut||'')+'" onchange="updateStaffTime('+idx+',\'timeOut\',this.value)"><button class="btn bc bs" style="padding:6px 12px;font-size:.74rem" onclick="signOutStaffCard('+idx+')">Sign Out</button></div></div>'}
     list.appendChild(card)})}
+
+function renderStaff(){$('sDateShow').textContent=fD($('logDate').value);bSSB();rStaffRoster();updateStaffDash();renderSignedStaff()}
 
 // Check if ALL consumers and ALL staff are done
 function checkAllDone(){
@@ -312,7 +372,7 @@ function checkAllDone(){
   if(pAllDone&&pAnyDone&&sAllDone&&(pAnyDone||sAnyDone)){saveDayQuiet();toast('Day complete — report saved to Admin')}}
 
 function openAdmin(){goPage('aPage')}
-async function unlock(){const pin=$('pinIn').value;const adminPin=await getPin();if(pin===adminPin){$('aLock').style.display='none';$('aDash').classList.add('unlocked');admOK=true;rptOK=true;$('manLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();renderManage();renderStaffManage();loadLogs();loadSettings();renderStaff();renderViewers();bViewerLocSel();return}const viewers=await A('viewers');const v=viewers.find(x=>x.value.pin===pin);if(v){const vd=v.value;if(vd.loc==='all'||vd.loc===loc){$('aLock').style.display='none';$('aDash').classList.add('unlocked');rptOK=true;admOK=false;$('logLoc').textContent=lS();loadLogs();['secActions','secManage','secStaffMgr','secViewers','secSettings'].forEach(id=>$(id).style.display='none');toast('Report viewer: '+vd.name)}else{toast('No access to this location')}}else{toast('Wrong PIN');$('pinIn').value=''}}
+async function unlock(){const pin=$('pinIn').value;const adminPin=await getPin();if(pin===adminPin){$('aLock').style.display='none';$('aDash').classList.add('unlocked');admOK=true;rptOK=true;$('manLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();$('staffHouseLoc').textContent=lS();renderManage();renderStaffManage();renderStaffHouses();loadLogs();loadSettings();renderStaff();renderViewers();bViewerLocSel();return}const viewers=await A('viewers');const v=viewers.find(x=>x.value.pin===pin);if(v){const vd=v.value;if(vd.loc==='all'||vd.loc===loc){$('aLock').style.display='none';$('aDash').classList.add('unlocked');rptOK=true;admOK=false;$('logLoc').textContent=lS();loadLogs();['secActions','secManage','secStaffMgr','secStaffHouses','secViewers','secSettings'].forEach(id=>$(id).style.display='none');toast('Report viewer: '+vd.name)}else{toast('No access to this location')}}else{toast('Wrong PIN');$('pinIn').value=''}}
 async function setPin(){const n=$('newPin').value;if(n.length!==4||!/^\d+$/.test(n)){toast('PIN must be 4 digits');return}await savSet({pin:n});$('newPin').value='';toast('PIN updated!')}
 
 // Viewers
@@ -371,7 +431,7 @@ $('logDate').valueAsDate=new Date();
 $('logDate').addEventListener('change',schSave);
 $('pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
 $('admEmail').addEventListener('change',e=>savSet({email:e.target.value}));
-$('newStaffIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addNewStaff()}});
+$('newStaffIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addNewStaffToRoster()}});
 $('newDrv').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addDrv()}});
 
 (async function(){await loadInd();await restore();await loadDrv();await loadStaffRoster();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';bSB();rHomes();updateDash();bHomeList();renderStaff()})();
