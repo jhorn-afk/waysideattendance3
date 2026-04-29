@@ -132,7 +132,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 </head>
 <body>
 <div class="lb" id="locBar"></div>
-<div class="hdr"><div class="hdr-i"><h1 id="locTitle">Pathways Westlake<small>Attendance Log</small></h1><div class="hdr-r"><span class="save-s" id="autoSave"></span><span class="clock" id="clock"></span><button class="gear" onclick="openAdmin()">⚙️</button></div></div></div>
+<div class="hdr"><div class="hdr-i"><h1 id="locTitle" onclick="refreshApp()" style="cursor:pointer">Pathways Westlake<small>Attendance Log</small></h1><div class="hdr-r"><span class="save-s" id="autoSave"></span><span class="clock" id="clock"></span><button class="gear" onclick="openAdmin()">⚙️</button></div></div></div>
 <div class="mtabs"><button class="mt on" data-p="wPage" onclick="goPage('wPage')">Attendance</button><button class="mt" data-p="sPage" onclick="goPage('sPage')">Staff</button><button class="mt" data-p="aPage" onclick="goPage('aPage')">Admin</button></div>
 <div class="cn">
 <div class="page on" id="wPage">
@@ -529,6 +529,15 @@ function cpTxt(){const d=getPayload();let t=d.locationName+' — '+fD(d.date)+'\
 function cpCSV(){navigator.clipboard.writeText(mkCSV(getPayload())).then(()=>toast('CSV copied!'))}
 
 function clearToday(){if(!confirm("Clear all today's data?"))return;cP().forEach((_,i)=>{pt[loc][i]={timeIn:'',timeOut:'',signedIn:false,fullyLocked:false,driverIn:'',driverOut:''}});sr[loc]=[];sic[loc]=1;$('driverName').value='';$('logDate').valueAsDate=new Date();schSave();resetWiz();updateDash();renderStaff();toast('Cleared')}
+
+function refreshApp(){
+  // Re-render everything from current state — no data deleted
+  resetWiz();updateDash();renderPSigned();
+  resetStaffWiz();updateStaffDash();renderSignedStaff();
+  bHomeList();bLB();
+  $('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';
+  goPage('wPage');
+  toast('Refreshed')}
 
 function uClock(){$('clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}uClock();setInterval(uClock,1000);
 
