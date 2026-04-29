@@ -132,7 +132,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 </head>
 <body>
 <div class="lb" id="locBar"></div>
-<div class="hdr"><div class="hdr-i"><h1 id="locTitle" onclick="refreshApp()" style="cursor:pointer">Pathways Westlake<small>Attendance Log</small></h1><div class="hdr-r"><span class="save-s" id="autoSave"></span><span class="clock" id="clock"></span><button class="gear" onclick="openAdmin()">⚙️</button></div></div></div>
+<div class="hdr"><div class="hdr-i"><h1 id="locTitle" onclick="refreshApp()" style="cursor:pointer">Pathways Westlake<small>Attendance Log · v1.2</small></h1><div class="hdr-r"><span class="save-s" id="autoSave"></span><span class="clock" id="clock"></span><button class="gear" onclick="openAdmin()">⚙️</button></div></div></div>
 <div class="mtabs"><button class="mt on" data-p="wPage" onclick="goPage('wPage')">Attendance</button><button class="mt" data-p="sPage" onclick="goPage('sPage')">Staff</button><button class="mt" data-p="aPage" onclick="goPage('aPage')">Admin</button></div>
 <div class="cn">
 <div class="page on" id="wPage">
@@ -216,7 +216,7 @@ function now(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':
 function today(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
 function getSelHomes(){return[...selH]}
 
-function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';if(admOK){$('manLoc').textContent=lS();$('drvManLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();$('staffHouseLoc').textContent=lS();renderManage();renderDrvManage();renderStaffManage();renderStaffHouses();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderPSigned();resetStaffWiz();updateStaffDash();renderSignedStaff();bHomeList()};el.appendChild(b)})}
+function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.2</small>';if(admOK){$('manLoc').textContent=lS();$('drvManLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();$('staffHouseLoc').textContent=lS();renderManage();renderDrvManage();renderStaffManage();renderStaffHouses();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderPSigned();resetStaffWiz();updateStaffDash();renderSignedStaff();bHomeList()};el.appendChild(b)})}
 
 let svT=null;
 function schSave(){clearTimeout(svT);svT=setTimeout(async()=>{const state={_driver:$('driverName').value,_date:$('logDate').value};LOCS.forEach(l=>{state[l.id]={pt:pt[l.id]||{},sr:sr[l.id]||[],sic:sic[l.id]||1}});await D('state','current',state);$('autoSave').textContent='Saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},500)}
@@ -536,7 +536,7 @@ function refreshApp(){
   resetWiz();updateDash();renderPSigned();
   resetStaffWiz();updateStaffDash();renderSignedStaff();
   bHomeList();bLB();
-  $('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';
+  $('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.2</small>';
   goPage('wPage');
   toast('Refreshed')}
 
@@ -549,7 +549,7 @@ $('admEmail').addEventListener('change',e=>savSet({email:e.target.value}));
 $('newStaffIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addNewStaffToRoster()}});
 $('newDrv').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addDrv()}});
 
-(async function(){await loadInd();await restore();await loadDrv();await loadStaffRoster();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log</small>';bSB();rHomes();updateDash();renderPSigned();bHomeList();renderStaff()})();
+(async function(){await loadInd();await restore();await loadDrv();await loadStaffRoster();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.2</small>';bSB();rHomes();updateDash();renderPSigned();bHomeList();renderStaff()})();
 </script>
 </body>
 </html>
