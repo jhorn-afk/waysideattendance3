@@ -236,7 +236,7 @@ async function loadSettings(){const s=await G('settings','admin');if(s&&s.email)
 async function getPin(){const s=await G('settings','admin');return(s&&s.pin)||'1234'}
 async function savSet(obj){const c=(await G('settings','admin'))||{};await D('settings','admin',{...c,...obj})}
 
-function goPage(p){document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));$(p).classList.add('on');document.querySelectorAll('.mt').forEach(t=>t.classList.toggle('on',t.dataset.p===p));if(p==='sPage'){renderStaff();updateStaffDash();renderSignedStaff()}}
+function goPage(p){document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));$(p).classList.add('on');document.querySelectorAll('.mt').forEach(t=>t.classList.toggle('on',t.dataset.p===p));if(p==='sPage'){resetStaffWiz();updateStaffDash();renderSignedStaff()}}
 function updateDash(){const pp=cP(),t=pt[loc]||{};let si=0,done=0;pp.forEach((_,i)=>{if(t[i]){if(t[i].fullyLocked)done++;else if(t[i].signedIn)si++}});$('dIn').textContent=si;$('dDone').textContent=done;$('dRem').textContent=pp.length-si-done}
 
 function goStep(n){step=n;document.querySelectorAll('.ws').forEach(s=>s.classList.remove('on'));$('s'+n).classList.add('on');bSB();if(n===1)rHomes();if(n===2)rPpl();if(n===3)rDrv();if(n===4){$('wTime').value=now();autoSetAct();rCS()}}
@@ -410,7 +410,7 @@ function renderSignedStaff(){
     }
     list.appendChild(card)})}
 
-function renderStaff(){$('sDateShow').textContent=fD($('logDate').value);bSSB();rStaffRoster();updateStaffDash();renderSignedStaff()}
+function renderStaff(){$('sDateShow').textContent=fD($('logDate').value);goSS(1);updateStaffDash();renderSignedStaff()}
 
 // Check if ALL consumers and ALL staff are done
 function checkAllDone(){
