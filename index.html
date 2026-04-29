@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Pathways — Attendance Log v1.2</title>
+<title>Pathways — Attendance Log v1.3</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{--pri:#5d1b5f;--pri-lt:#f0e4f0;--pri-dk:#4a1549;--gold:#b08818;--gold-lt:#f5edda;--gold-dk:#8a6a10;--bg:#f5f2f8;--card:#fff;--grn:#28a745;--grn-lt:#e6f7ec;--red:#c0392b;--red-lt:#fdecea;--txt:#1a1a1a;--mut:#6b6b6b;--bdr:#d9d4cc;--deep:#2d0e2e;--r:12px;--rs:8px;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
@@ -132,7 +132,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 </head>
 <body>
 <div class="lb" id="locBar"></div>
-<div class="hdr"><div class="hdr-i"><h1 id="locTitle" onclick="refreshApp()" style="cursor:pointer">Pathways Westlake<small>Attendance Log · v1.2</small></h1><div class="hdr-r"><span class="save-s" id="autoSave"></span><span class="clock" id="clock"></span><button class="gear" onclick="openAdmin()">⚙️</button></div></div></div>
+<div class="hdr"><div class="hdr-i"><h1 id="locTitle" onclick="refreshApp()" style="cursor:pointer">Pathways Westlake<small>Attendance Log · v1.3</small></h1><div class="hdr-r"><span class="save-s" id="autoSave"></span><span class="clock" id="clock"></span><button class="gear" onclick="openAdmin()">⚙️</button></div></div></div>
 <div class="mtabs"><button class="mt on" data-p="wPage" onclick="goPage('wPage')">Attendance</button><button class="mt" data-p="sPage" onclick="goPage('sPage')">Staff</button><button class="mt" data-p="aPage" onclick="goPage('aPage')">Admin</button></div>
 <div class="cn">
 <div class="page on" id="wPage">
@@ -216,7 +216,7 @@ function now(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':
 function today(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
 function getSelHomes(){return[...selH]}
 
-function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.2</small>';if(admOK){$('manLoc').textContent=lS();$('drvManLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();$('staffHouseLoc').textContent=lS();renderManage();renderDrvManage();renderStaffManage();renderStaffHouses();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderPSigned();resetStaffWiz();updateStaffDash();renderSignedStaff();bHomeList()};el.appendChild(b)})}
+function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.3</small>';if(admOK){$('manLoc').textContent=lS();$('drvManLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();$('staffHouseLoc').textContent=lS();renderManage();renderDrvManage();renderStaffManage();renderStaffHouses();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderPSigned();resetStaffWiz();updateStaffDash();renderSignedStaff();bHomeList()};el.appendChild(b)})}
 
 let svT=null;
 function schSave(){clearTimeout(svT);svT=setTimeout(async()=>{const state={_driver:$('driverName').value,_date:$('logDate').value};LOCS.forEach(l=>{state[l.id]={pt:pt[l.id]||{},sr:sr[l.id]||[],sic:sic[l.id]||1}});await D('state','current',state);$('autoSave').textContent='Saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},500)}
@@ -275,7 +275,8 @@ function renderPSigned(){
       const noteShow=noteVal?'<div style="font-size:.7rem;color:var(--gold-dk);margin-top:4px;font-style:italic">Note: '+noteVal+'</div>':'';
       card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+p.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(p.home||'—')+' · '+f12(s.timeIn)+' → '+f12(s.timeOut)+'</div><div style="font-size:.7rem;color:var(--mut)">Arr: '+(s.driverIn||'—')+' · Dep: '+(s.driverOut||'—')+'</div>'+noteShow+'</div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--grn);font-weight:700">✓ Done</span>'+(admOK?'<button class="mb mb-d" onclick="adminUnlockP('+p.idx+')">Unlock</button>':'')+'</div></div>'
     }else if(s.signedIn){
-      card.innerHTML='<div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+p.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(p.home||'—')+' · Arr: '+(s.driverIn||'—')+'</div></div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--gold);font-weight:700">⏱ In: '+f12(s.timeIn)+'</span></div></div><div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap"><label style="font-size:.66rem;color:var(--mut)">In:</label><input type="time" class="ti-edit" value="'+s.timeIn+'" onchange="updatePTime('+p.idx+',\'timeIn\',this.value)"><div style="display:flex;gap:6px;margin-top:4px;width:100%;align-items:center"><input type="text" class="si" style="font-size:.8rem;padding:7px 10px;flex:1" placeholder="Add a note..." value="'+noteVal.replace(/"/g,'&quot;')+'" id="pnote'+p.idx+'"><button class="btn bg bs" style="padding:8px 16px;font-size:.8rem" onclick="savePNote('+p.idx+')">Save Note</button></div></div></div>'
+      const savedNote=noteVal?'<div style="background:var(--gold-lt);border-radius:6px;padding:6px 10px;margin-top:6px;font-size:.78rem;color:var(--gold-dk)">📝 '+noteVal+'</div>':'';
+      card.innerHTML='<div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+p.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(p.home||'—')+' · Arr: '+(s.driverIn||'—')+'</div></div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--gold);font-weight:700">⏱ In: '+f12(s.timeIn)+'</span></div></div><div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap"><label style="font-size:.66rem;color:var(--mut)">In:</label><input type="time" class="ti-edit" value="'+s.timeIn+'" onchange="updatePTime('+p.idx+',\'timeIn\',this.value)"></div>'+savedNote+'<div style="display:flex;gap:6px;margin-top:6px;width:100%;align-items:center"><input type="text" class="si" style="font-size:.8rem;padding:7px 10px;flex:1" placeholder="'+(noteVal?'Update note...':'Add a note...')+'" id="pnote'+p.idx+'"><button class="btn bg bs" style="padding:8px 16px;font-size:.8rem" onclick="savePNote('+p.idx+')">'+(noteVal?'Update':'Save Note')+'</button></div></div>'
     }
     list.appendChild(card)})}
 
@@ -406,7 +407,8 @@ function renderSignedStaff(){
       const noteShow=noteVal?'<div style="font-size:.7rem;color:var(--gold-dk);margin-top:4px;font-style:italic">Note: '+noteVal+'</div>':'';
       card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+' · '+f12(r.timeIn)+' → '+f12(r.timeOut)+'</div>'+noteShow+'</div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:var(--grn);font-weight:700">✓ Locked</span>'+ub+'</div></div>'
     } else if(r.signedIn){
-      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:.72rem;color:var(--gold);font-weight:700">⏱ Signed In</span><button class="btn bg bs" style="padding:6px 14px;font-size:.76rem" data-soidx="'+idx+'">Sign Out</button></div></div><div style="display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap"><label style="font-size:.66rem;color:var(--mut)">In:</label><input type="time" class="ti-edit" value="'+r.timeIn+'" onchange="updateStaffTime('+idx+',\'timeIn\',this.value)"><div style="display:flex;gap:6px;margin-top:4px;width:100%;align-items:center"><input type="text" class="si" style="font-size:.8rem;padding:7px 10px;flex:1" placeholder="Add a note..." value="'+noteVal.replace(/"/g,'&quot;')+'" id="snote'+idx+'"><button class="btn bg bs" style="padding:8px 16px;font-size:.8rem" onclick="saveStaffNote('+idx+')">Save Note</button></div></div>';
+      const savedNote=noteVal?'<div style="background:var(--gold-lt);border-radius:6px;padding:6px 10px;margin-top:6px;font-size:.78rem;color:var(--gold-dk)">📝 '+noteVal+'</div>':'';
+      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:.9rem">'+r.name+'</div><div style="font-size:.72rem;color:var(--mut)">'+(r.home||'—')+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:.72rem;color:var(--gold);font-weight:700">⏱ Signed In</span><button class="btn bg bs" style="padding:6px 14px;font-size:.76rem" data-soidx="'+idx+'">Sign Out</button></div></div><div style="display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap"><label style="font-size:.66rem;color:var(--mut)">In:</label><input type="time" class="ti-edit" value="'+r.timeIn+'" onchange="updateStaffTime('+idx+',\'timeIn\',this.value)"></div>'+savedNote+'<div style="display:flex;gap:6px;margin-top:6px;width:100%;align-items:center"><input type="text" class="si" style="font-size:.8rem;padding:7px 10px;flex:1" placeholder="'+(noteVal?'Update note...':'Add a note...')+'" id="snote'+idx+'"><button class="btn bg bs" style="padding:8px 16px;font-size:.8rem" onclick="saveStaffNote('+idx+')">'+(noteVal?'Update':'Save Note')+'</button></div>';
       card.querySelector('[data-soidx]').addEventListener('click',function(e){e.stopPropagation();selStaff=r.name;selStaffHouse=r.home||'';goSS(3)});
     }
     list.appendChild(card)})}
@@ -536,7 +538,7 @@ function refreshApp(){
   resetWiz();updateDash();renderPSigned();
   resetStaffWiz();updateStaffDash();renderSignedStaff();
   bHomeList();bLB();
-  $('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.2</small>';
+  $('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.3</small>';
   goPage('wPage');
   toast('Refreshed')}
 
@@ -549,7 +551,7 @@ $('admEmail').addEventListener('change',e=>savSet({email:e.target.value}));
 $('newStaffIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addNewStaffToRoster()}});
 $('newDrv').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addDrv()}});
 
-(async function(){await loadInd();await restore();await loadDrv();await loadStaffRoster();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.2</small>';bSB();rHomes();updateDash();renderPSigned();bHomeList();renderStaff()})();
+(async function(){await loadInd();await restore();await loadDrv();await loadStaffRoster();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.3</small>';bSB();rHomes();updateDash();renderPSigned();bHomeList();renderStaff()})();
 </script>
 </body>
 </html>
