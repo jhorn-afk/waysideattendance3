@@ -220,7 +220,14 @@ function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=doc
 
 let svT=null;
 function schSave(){clearTimeout(svT);svT=setTimeout(async()=>{const state={_driver:$('driverName').value,_date:$('logDate').value};LOCS.forEach(l=>{state[l.id]={pt:pt[l.id]||{},sr:sr[l.id]||[],sic:sic[l.id]||1}});await D('state','current',state);$('autoSave').textContent='Saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},500)}
-async function restore(){const s=await G('state','current');if(!s)return;if(s._driver)$('driverName').value=s._driver;if(s._date)$('logDate').value=s._date;LOCS.forEach(l=>{if(s[l.id]){pt[l.id]=s[l.id].pt||{};sr[l.id]=s[l.id].sr||[];sic[l.id]=s[l.id].sic||1}})}
+async function restore(){const s=await G('state','current');if(!s)return;
+  const td=today();
+  if(s._date&&s._date!==td){
+    // New day — clear all participant and staff state, keep roster/individuals
+    LOCS.forEach(l=>{pt[l.id]={};sr[l.id]=[];sic[l.id]=1});
+    $('logDate').valueAsDate=new Date();$('driverName').value='';
+    await D('state','current',{_driver:'',_date:td});return}
+  if(s._driver)$('driverName').value=s._driver;if(s._date)$('logDate').value=s._date;LOCS.forEach(l=>{if(s[l.id]){pt[l.id]=s[l.id].pt||{};sr[l.id]=s[l.id].sr||[];sic[l.id]=s[l.id].sic||1}})}
 async function loadInd(){for(const l of LOCS){const saved=await G('individuals',l.id);ind[l.id]=saved||[...(DEFAULTS[l.id]||[])];if(!saved)await D('individuals',l.id,ind[l.id]);if(!pt[l.id])pt[l.id]={};ind[l.id].forEach((_,i)=>{if(!pt[l.id][i])pt[l.id][i]={timeIn:'',timeOut:'',signedIn:false,fullyLocked:false,driverIn:'',driverOut:''}});if(!sr[l.id])sr[l.id]=[];if(!sic[l.id])sic[l.id]=1}}
 async function saveInd(){await D('individuals',loc,ind[loc]);const npt={};ind[loc].forEach((_,i)=>{npt[i]=pt[loc][i]||{timeIn:'',timeOut:'',signedIn:false,fullyLocked:false,driverIn:'',driverOut:''}});pt[loc]=npt}
 async function loadDrv(){for(const l of LOCS){const sv=await G('drivers',l.id);drv[l.id]=sv||{}}}
