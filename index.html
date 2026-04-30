@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Pathways — Attendance Log v1.4</title>
+<title>Pathways — Attendance Log v1.5</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{--pri:#5d1b5f;--pri-lt:#f0e4f0;--pri-dk:#4a1549;--gold:#b08818;--gold-lt:#f5edda;--gold-dk:#8a6a10;--bg:#f5f2f8;--card:#fff;--grn:#28a745;--grn-lt:#e6f7ec;--red:#c0392b;--red-lt:#fdecea;--txt:#1a1a1a;--mut:#6b6b6b;--bdr:#d9d4cc;--deep:#2d0e2e;--r:12px;--rs:8px;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
@@ -135,7 +135,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 </head>
 <body>
 <div class="lb" id="locBar"></div>
-<div class="hdr"><div class="hdr-i"><h1 id="locTitle" onclick="refreshApp()" style="cursor:pointer">Pathways Westlake<small>Attendance Log · v1.4</small></h1><div class="hdr-r"><span class="save-s" id="autoSave"></span><span class="clock" id="clock"></span><button class="gear" onclick="openAdmin()">⚙️</button></div></div></div>
+<div class="hdr"><div class="hdr-i"><h1 id="locTitle" onclick="refreshApp()" style="cursor:pointer">Pathways Westlake<small>Attendance Log · v1.5</small></h1><div class="hdr-r"><span class="save-s" id="autoSave"></span><span class="clock" id="clock"></span><button class="gear" onclick="openAdmin()">⚙️</button></div></div></div>
 <div class="mtabs"><button class="mt on" data-p="wPage" onclick="goPage('wPage')">Attendance</button><button class="mt" data-p="sPage" onclick="goPage('sPage')">Staff</button><button class="mt" data-p="aPage" onclick="goPage('aPage')">Admin</button></div>
 <div class="cn">
 <div class="page on" id="wPage">
@@ -219,7 +219,7 @@ function now(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':
 function today(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
 function getSelHomes(){return[...selH]}
 
-function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.4</small>';if(admOK){$('manLoc').textContent=lS();$('drvManLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();$('staffHouseLoc').textContent=lS();renderManage();renderDrvManage();renderStaffManage();renderStaffHouses();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderPSigned();resetStaffWiz();updateStaffDash();renderSignedStaff();bHomeList()};el.appendChild(b)})}
+function bLB(){const el=$('locBar');el.innerHTML='';LOCS.forEach(l=>{const b=document.createElement('button');b.className=l.id===loc?'on':'';b.textContent=l.short;b.onclick=()=>{loc=l.id;bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.5</small>';if(admOK){$('manLoc').textContent=lS();$('drvManLoc').textContent=lS();$('logLoc').textContent=lS();$('staffManLoc').textContent=lS();$('staffHouseLoc').textContent=lS();renderManage();renderDrvManage();renderStaffManage();renderStaffHouses();loadLogs()}if(rptOK&&!admOK){$('logLoc').textContent=lS();loadLogs()}resetWiz();updateDash();renderPSigned();resetStaffWiz();updateStaffDash();renderSignedStaff();bHomeList()};el.appendChild(b)})}
 
 let svT=null;
 function schSave(){clearTimeout(svT);svT=setTimeout(async()=>{const state={_driver:$('driverName').value,_date:$('logDate').value};LOCS.forEach(l=>{state[l.id]={pt:pt[l.id]||{},sr:sr[l.id]||[],sic:sic[l.id]||1}});await D('state','current',state);$('autoSave').textContent='Saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},500)}
@@ -428,7 +428,24 @@ function renderSignedStaff(){
     }
     list.appendChild(card)})}
 
-function syncDates(val){$('logDate').value=val;$('sLogDate').value=val;schSave()}
+async function syncDates(val){$('logDate').value=val;$('sLogDate').value=val;await loadDateData(val);schSave()}
+
+async function loadDateData(date){
+  const key=loc+'_'+date;
+  const d=await G('logs',key);
+  // Clear current working state for this location
+  const pp=cP();
+  pp.forEach((_,i)=>{pt[loc][i]={timeIn:'',timeOut:'',signedIn:false,fullyLocked:false,driverIn:'',driverOut:'',note:''}});
+  sr[loc]=[];sic[loc]=1;
+  if(d){
+    // Load saved log data
+    (d.participants||[]).forEach(p=>{
+      const idx=pp.findIndex(x=>x.name===p.name);
+      if(idx>=0)pt[loc][idx]={timeIn:p.timeIn||'',timeOut:p.timeOut||'',signedIn:!!(p.timeIn),fullyLocked:!!(p.timeIn&&p.timeOut),driverIn:p.driverIn||p.driver||'',driverOut:p.driverOut||'',note:p.note||''}});
+    sr[loc]=(d.staff||[]).map((s,i)=>({id:i+1,name:s.name,home:s.home||'',timeIn:s.timeIn||'',timeOut:s.timeOut||'',signedIn:!!(s.timeIn),fullyLocked:!!(s.timeIn&&s.timeOut),note:s.note||''}));
+    sic[loc]=(sr[loc].length||0)+1;
+  }
+  resetWiz();updateDash();renderPSigned();resetStaffWiz();updateStaffDash();renderSignedStaff()}
 
 function renderStaff(){$('sLogDate').value=$('logDate').value;goSS(1);updateStaffDash();renderSignedStaff()}
 
@@ -555,13 +572,13 @@ function refreshApp(){window.location.reload(true)}
 function uClock(){$('clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}uClock();setInterval(uClock,1000);
 
 $('logDate').valueAsDate=new Date();
-$('logDate').addEventListener('change',function(){$('sLogDate').value=this.value;schSave()});
+$('logDate').addEventListener('change',async function(){$('sLogDate').value=this.value;await loadDateData(this.value);schSave()});
 $('pinIn').addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
 $('admEmail').addEventListener('change',e=>savSet({email:e.target.value}));
 $('newStaffIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addNewStaffToRoster()}});
 $('newDrv').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addDrv()}});
 
-(async function(){await loadInd();await restore();await loadDrv();await loadStaffRoster();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.4</small>';bSB();rHomes();updateDash();renderPSigned();bHomeList();renderStaff()})();
+(async function(){await loadInd();await restore();await loadDrv();await loadStaffRoster();bLB();$('locTitle').innerHTML=lN()+'<small>Attendance Log · v1.5</small>';bSB();rHomes();updateDash();renderPSigned();bHomeList();renderStaff()})();
 </script>
 </body>
 </html>
