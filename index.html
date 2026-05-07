@@ -597,7 +597,7 @@ function cpCSV(){navigator.clipboard.writeText(mkCSV(getPayload())).then(()=>toa
 
 function clearToday(){if(!confirm("Clear all today's data?"))return;cP().forEach((_,i)=>{pt[loc][i]={timeIn:'',timeOut:'',signedIn:false,fullyLocked:false,driverIn:'',driverOut:''}});sr[loc]=[];sic[loc]=1;$('driverName').value='';$('logDate').valueAsDate=new Date();schSave();resetWiz();updateDash();renderStaff();toast('Cleared')}
 
-function refreshApp(){window.location.reload(true)}
+function refreshApp(){window.location.href=window.location.pathname+'?v='+Date.now()}
 
 function uClock(){$('clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}uClock();setInterval(uClock,1000);
 
